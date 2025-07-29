@@ -30,6 +30,16 @@ CONTENT_TYPES = {
     "md": "text/markdown"
 }
 
+class Config:
+    """
+    Clase de configuración para compatibilidad con file_handler
+    """
+    AWS_REGION = AWS_REGION
+    S3_BUCKET = S3_BUCKET
+    MCP_BASE_URL = MCP_BASE_URL
+    USE_PRESIGNED_URLS = USE_PRESIGNED_URLS
+    PRESIGNED_URL_EXPIRATION = PRESIGNED_URL_EXPIRATION
+
 # Configuración de logging
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),

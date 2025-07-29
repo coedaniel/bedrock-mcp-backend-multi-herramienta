@@ -1,191 +1,126 @@
-# app.py
+# app.py - Backend Multi-Herramienta Bedrock MCP con File Handler Avanzado
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import json
-import base64
-import binascii
 import logging
 import uuid
-import requests
 from datetime import datetime
 from mcp_client import call_mcp_tool
-from s3_utils import upload_to_s3, list_project_files
+from s3_utils import list_project_files
+from file_handler import file_handler
+from document_endpoints import router as document_router
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Bedrock MCP Backend",
     description="Backend multi-herramienta para Bedrock Function Calling + MCP + S3",
-    version="1.0.0"
+    version="2.0.0"
 )
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "bedrock-mcp-backend",
-        "timestamp": datetime.now().isoformat()
-    }
+# Incluir router de documentos
+app.include_router(document_router)
 
 @app.post("/bedrock/tool-use")
-async def handle_tool_use(request: Request):
+async def bedrock_tool_use(request: Request):
     """
-    🚀 Backend Bedrock Function Calling → MCP → S3
-    Procesa cualquier tool_use de Bedrock automáticamente
+    🔧 Endpoint principal para Bedrock Function Calling
+    Procesa herramientas MCP dinámicamente con file handling avanzado
     """
-    request_id = str(uuid.uuid4())
     start_time = datetime.now()
+    request_id = str(uuid.uuid4())[:8]
     
-    logger.info(f"🎯 Nueva solicitud Bedrock - ID: {request_id}")
+    logger.info(f"🚀 Nueva solicitud - ID: {request_id}")
     
     try:
+        # 1️⃣ Parsear request de Bedrock
         body = await request.json()
-        logger.debug(f"📥 Body recibido: {json.dumps(body, indent=2)}")
+        logger.info(f"📥 Request recibido: {json.dumps(body, indent=2)}")
         
+        # Extraer información de la herramienta
         tool_use = body.get("toolUse", {})
-        tool_name = tool_use.get("name")
-        tool_id = tool_use.get("toolUseId")
+        tool_name = tool_use.get("name", "unknown")
+        tool_id = tool_use.get("toolUseId", "unknown")
         tool_input = tool_use.get("input", {})
-        conversation_id = body.get("conversationId")
-        message_id = body.get("messageId")
         
-        # Extraer nombre del proyecto si está disponible
-        project_name = tool_input.get("project_name") or body.get("project_name") or "bedrock-auto"
+        # Extraer proyecto (con fallback)
+        project_name = tool_input.get("project_name", "default")
         
-        logger.info(f"🔧 Procesando herramienta: {tool_name}")
-        logger.info(f"📋 Proyecto: {project_name}")
+        logger.info(f"🔧 Herramienta: {tool_name}")
         logger.info(f"🆔 Tool ID: {tool_id}")
+        logger.info(f"📋 Proyecto: {project_name}")
+        logger.info(f"📝 Input: {json.dumps(tool_input, indent=2)}")
         
-        if not tool_name:
-            raise HTTPException(status_code=400, detail="Missing tool name")
+        # 2️⃣ Llamar a MCP Tool
+        logger.info(f"📡 Llamando a MCP server...")
+        result_data = await call_mcp_tool(tool_name, tool_input)
         
-        # 1️⃣ Llamar al MCP correspondiente
-        logger.info(f"📡 Llamando MCP: {tool_name}")
-        mcp_response = call_mcp_tool(tool_name, tool_input, conversation_id, message_id)
-        result_data = mcp_response.get("result", {})
+        if not result_data:
+            raise Exception("No se recibió respuesta del MCP server")
         
-        logger.info(f"✅ MCP respondió exitosamente")
-        logger.debug(f"📊 Datos resultado: {json.dumps(result_data, indent=2)}")
+        logger.info(f"✅ Respuesta MCP recibida")
+        logger.debug(f"📄 Respuesta MCP: {json.dumps(result_data, indent=2)}")
         
-        # 2️⃣ Detectar formato y procesar archivo
-        filename = result_data.get("filename") or result_data.get("path", "").split("/")[-1] or f"{tool_name}_{request_id[:8]}.txt"
-        file_url = None
-        file_processed = False
-        
-        logger.info(f"📄 Procesando archivo: {filename}")
-        
-        # 3️⃣ Obtener contenido según formato
-        try:
-            if "status" in result_data and result_data["status"] == "success":
-                # Caso especial: herramientas que devuelven resultado exitoso
-                logger.info(f"✅ Herramienta completada exitosamente: {result_data.get('message', 'Sin mensaje')}")
-                
-                # Verificar si ya tiene s3_url (desde el wrapper)
-                if "s3_url" in result_data:
-                    file_url = result_data.get("s3_url")
-                    file_processed = True
-                    logger.info(f"📤 Archivo ya subido a S3: {file_url}")
-                elif "path" in result_data:
-                    # Fallback: path local (caso anterior)
-                    local_path = result_data.get("path", "")
-                    logger.info(f"📁 Leyendo archivo local: {local_path}")
-                    
-                    # Intentar leer el archivo desde el MCP server
-                    try:
-                        file_request_url = f"https://mcp.danielingram.shop/files{local_path}"
-                        logger.info(f"📥 Solicitando archivo: {file_request_url}")
-                        
-                        file_response = requests.get(file_request_url, timeout=30)
-                        
-                        if file_response.status_code == 200:
-                            file_bytes = file_response.content
-                            file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                            file_processed = True
-                            logger.info(f"📤 Archivo descargado y subido a S3: {file_url}")
-                        else:
-                            logger.warning(f"⚠️ No se pudo descargar archivo: {file_response.status_code}")
-                            file_url = f"Archivo generado en: {local_path}"
-                            file_processed = True
-                            
-                    except Exception as download_error:
-                        logger.error(f"❌ Error descargando archivo: {str(download_error)}")
-                        file_url = f"Archivo generado en: {local_path}"
-                        file_processed = True
-                else:
-                    # Solo mensaje de éxito sin archivo
-                    file_url = result_data.get("message", "Operación completada")
-                    file_processed = True
-                
-            elif "diagram_data" in result_data:  # Diagramas en hex
-                logger.info(f"🎨 Procesando diagrama (hex)")
-                file_bytes = bytes.fromhex(result_data["diagram_data"])
-                file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                file_processed = True
-                
-            elif "file_content" in result_data:  # Archivos en base64
-                logger.info(f"📁 Procesando archivo (base64)")
-                file_bytes = base64.b64decode(result_data["file_content"])
-                file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                file_processed = True
-                
-            elif "raw_text" in result_data:  # Texto plano
-                logger.info(f"📝 Procesando texto plano")
-                file_bytes = result_data["raw_text"].encode("utf-8")
-                if not filename.endswith(('.txt', '.md', '.json', '.yaml', '.yml')):
-                    filename += ".txt"
-                file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                file_processed = True
-                
-            elif "data" in result_data:
-                # Intentar hex genérico primero
-                try:
-                    logger.info(f"🔄 Intentando procesar como hex")
-                    file_bytes = bytes.fromhex(result_data["data"])
-                    file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                    file_processed = True
-                except binascii.Error:
-                    logger.info(f"🔄 Procesando como texto")
-                    file_bytes = result_data["data"].encode("utf-8")
-                    if not filename.endswith(('.txt', '.md', '.json', '.yaml', '.yml')):
-                        filename += ".txt"
-                    file_url = upload_to_s3(filename, file_bytes, project_name, tool_name)
-                    file_processed = True
-            
-            else:
-                # Respuesta de solo texto/información
-                logger.info(f"ℹ️ Respuesta informativa sin archivo")
-                response_text = json.dumps(result_data, indent=2) if result_data else "Operación completada"
-                file_processed = False
-                
-        except Exception as file_error:
-            logger.error(f"❌ Error procesando archivo: {str(file_error)}")
-            file_processed = False
+        # 3️⃣ Procesar respuesta con File Handler avanzado
+        logger.info(f"🗂️ Procesando archivos con File Handler...")
+        processed_response = await file_handler.process_mcp_response(result_data, project_name)
         
         # 4️⃣ Construir respuesta para Bedrock
         processing_time = (datetime.now() - start_time).total_seconds()
         
+        # Verificar archivos procesados
+        files_processed = processed_response.get('_files_processed', [])
+        
         content = []
         
-        if file_processed and file_url:
+        if files_processed:
+            # Respuesta con archivos procesados
             content.extend([
                 {"text": f"✅ {tool_name} ejecutado exitosamente"},
-                {"text": f"📁 Archivo: {filename}"},
-                {"text": f"🔗 URL: {file_url}"},
+                {"text": f"📁 {len(files_processed)} archivo(s) procesado(s) y subido(s) a S3"},
                 {"text": f"📋 Proyecto: {project_name}"},
                 {"text": f"⏱️ Tiempo: {processing_time:.2f}s"}
             ])
-            logger.info(f"📤 Archivo subido: {file_url}")
+            
+            # Agregar detalles de cada archivo
+            for file_info in files_processed:
+                file_detail = f"📄 **{file_info['filename']}**"
+                file_detail += f"\n   • Tamaño: {file_info['size_bytes']:,} bytes"
+                file_detail += f"\n   • Tipo: {file_info['content_type']}"
+                
+                if file_info.get('presigned_url'):
+                    file_detail += f"\n   • 🔗 [Descargar]({file_info['presigned_url']})"
+                else:
+                    file_detail += f"\n   • 📍 S3: {file_info['s3_key']}"
+                
+                content.append({"text": file_detail})
+            
+            logger.info(f"📤 {len(files_processed)} archivo(s) procesado(s) exitosamente")
+            
         else:
-            # Respuesta informativa
-            response_text = result_data.get("raw_text") or json.dumps(result_data, indent=2)
+            # Respuesta informativa sin archivos
+            response_text = processed_response.get("raw_text")
+            if not response_text:
+                # Buscar texto en diferentes formatos de respuesta
+                if isinstance(processed_response, dict):
+                    response_text = (
+                        processed_response.get("message") or
+                        processed_response.get("result") or
+                        processed_response.get("output") or
+                        json.dumps(processed_response, indent=2)
+                    )
+                else:
+                    response_text = str(processed_response)
+            
             content.extend([
                 {"text": f"✅ {tool_name} ejecutado exitosamente"},
                 {"text": response_text},
+                {"text": f"📋 Proyecto: {project_name}"},
                 {"text": f"⏱️ Tiempo: {processing_time:.2f}s"}
             ])
             logger.info(f"ℹ️ Respuesta informativa enviada")
         
+        # Construir respuesta final
         response = {
             "toolResult": {
                 "toolUseId": tool_id,
@@ -234,6 +169,25 @@ async def list_files(project_name: str, limit: int = 10):
         logger.error(f"❌ Error listando archivos: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/health")
+async def health_check():
+    """
+    🏥 Health check endpoint
+    """
+    return {
+        "status": "healthy",
+        "service": "Bedrock MCP Backend",
+        "version": "2.0.0",
+        "timestamp": datetime.now().isoformat(),
+        "features": [
+            "Dynamic MCP Tool Processing",
+            "Advanced File Handler",
+            "S3 Auto-Upload",
+            "Presigned URLs",
+            "Multi-format Support"
+        ]
+    }
+
 @app.get("/")
 async def root():
     """
@@ -242,22 +196,21 @@ async def root():
     return {
         "service": "Bedrock MCP Backend",
         "description": "Backend multi-herramienta para Bedrock Function Calling + MCP + S3",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "features": {
+            "file_handler": "Advanced file detection and processing",
+            "s3_integration": "Automatic upload with presigned URLs",
+            "multi_format": "PNG, SVG, DOCX, XLSX, PDF, TXT support",
+            "project_organization": "Files organized by project"
+        },
         "endpoints": {
             "health": "/health",
             "tool_use": "/bedrock/tool-use",
             "list_files": "/projects/{project_name}/files"
         },
-        "features": [
-            "🔧 Soporte dinámico para cualquier herramienta MCP",
-            "📁 Subida automática a S3 con estructura por proyecto",
-            "🔐 URLs presignadas para seguridad",
-            "📊 Logging detallado y auditoría completa",
-            "🎨 Soporte multi-formato (PNG, SVG, CSV, XLSX, YAML, JSON, DOCX, TXT)"
-        ]
+        "documentation": "https://github.com/coedaniel/bedrock-mcp-backend-multi-herramienta"
     }
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("🚀 Iniciando Bedrock MCP Backend")
     uvicorn.run(app, host="0.0.0.0", port=8000)
