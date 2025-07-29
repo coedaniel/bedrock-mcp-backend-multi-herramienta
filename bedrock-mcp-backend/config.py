@@ -5,7 +5,7 @@ import logging
 # Configuración AWS
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 S3_BUCKET = os.getenv("S3_BUCKET", "controlwebinars2025")
-MCP_BASE_URL = os.getenv("MCP_BASE_URL", "http://localhost:8002/bedrock/tool-use")  # Usar MCP S3 Direct
+MCP_BASE_URL = os.getenv("MCP_BASE_URL", "https://mcp.danielingram.shop/bedrock/tool-use")  # Usar MCP externo
 
 # Configuración de seguridad
 USE_PRESIGNED_URLS = os.getenv("USE_PRESIGNED_URLS", "true").lower() == "true"

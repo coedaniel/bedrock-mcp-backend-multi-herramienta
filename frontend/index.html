@@ -3,635 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Bedrock MCP Backend - Interface</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #232526 0%, #414345 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .main-content {
-            padding: 40px;
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #eee;
-            margin-bottom: 30px;
-        }
-        
-        .tab {
-            padding: 15px 30px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 16px;
-            font-weight: 500;
-            color: #666;
-            transition: all 0.3s ease;
-        }
-        
-        .tab.active {
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-        }
-        
-        .tab:hover {
-            color: #667eea;
-            background: #f8f9ff;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 8px;
-            display: none;
-        }
-        
-        .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        
-        .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab {
-                flex: 1;
-                min-width: 120px;
-            }
-        }
-        
-        .feature-card {
-            background: #f8f9ff;
-            padding: 25px;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-            margin-bottom: 20px;
-        }
-        
-        .feature-card h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .feature-card p {
-            color: #666;
-            line-height: 1.6;
-        }
-        
-        .download-link {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-            transition: background 0.3s ease;
-        }
-        
-        .download-link:hover {
-            background: #218838;
-        }
-    </style>
+    <title>Bedrock MCP - Amazon Q CLI Style</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 Bedrock MCP Backend</h1>
-            <p>Interface Web para Generación de Documentos AWS</p>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-aws"></i>
+                    <h1>Bedrock MCP</h1>
+                    <span class="subtitle">Amazon Q CLI Style</span>
+                </div>
+                <div class="status" id="status">
+                    <i class="fas fa-circle status-indicator" id="statusIndicator"></i>
+                    <span id="statusText">Conectando...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message system-message">
+                    <div class="message-content">
+                        <i class="fas fa-robot"></i>
+                        <div class="text">
+                            <h3>🏗️ Arquitecto de Soluciones AWS</h3>
+                            <p>¡Hola! Soy tu consultor experto en AWS. Te ayudaré a dimensionar, documentar y entregar soluciones profesionales siguiendo las mejores prácticas.</p>
+                            <p><strong>Para comenzar, simplemente describe tu proyecto o pega el prompt del arquitecto.</strong></p>
+                            <div class="capabilities">
+                                <h4>🛠️ Capacidades disponibles:</h4>
+                                <ul>
+                                    <li><i class="fas fa-brain"></i> Análisis de requerimientos</li>
+                                    <li><i class="fas fa-project-diagram"></i> Diagramas de arquitectura</li>
+                                    <li><i class="fas fa-file-code"></i> Templates CloudFormation</li>
+                                    <li><i class="fas fa-calculator"></i> Calculadoras de costos</li>
+                                    <li><i class="fas fa-book"></i> Documentación AWS</li>
+                                    <li><i class="fas fa-cloud-upload-alt"></i> Entrega automática en S3</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Describe tu proyecto AWS o pega el prompt del arquitecto..."
+                        rows="3"
+                    ></textarea>
+                    <button id="sendButton" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <div class="model-info">
+                        <i class="fas fa-microchip"></i>
+                        <span>Amazon Bedrock Claude 3.5 Sonnet</span>
+                    </div>
+                    <div class="shortcuts">
+                        <span class="shortcut">Enter para enviar</span>
+                        <span class="shortcut">Shift+Enter para nueva línea</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="main-content">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('mcp-tools')">🔧 Herramientas MCP</button>
-                <button class="tab" onclick="showTab('sow-generator')">📋 Generar SOW</button>
-                <button class="tab" onclick="showTab('calculator')">🧮 Calculadora AWS</button>
-                <button class="tab" onclick="showTab('files')">📁 Archivos</button>
-            </div>
-            
-            <!-- Tab: Herramientas MCP -->
-            <div id="mcp-tools" class="tab-content active">
-                <h2>🔧 Herramientas MCP Disponibles</h2>
-                <p>Ejecuta cualquier herramienta MCP disponible en el sistema.</p>
-                
-                <form id="mcp-form">
-                    <div class="grid">
-                        <div class="form-group">
-                            <label for="tool-name">Nombre de la Herramienta:</label>
-                            <select id="tool-name" required>
-                                <option value="">Seleccionar herramienta...</option>
-                                <option value="generate_diagram">🎨 Generar Diagrama</option>
-                                <option value="create_document">📄 Crear Documento</option>
-                                <option value="analyze_data">📊 Analizar Datos</option>
-                                <option value="process_image">🖼️ Procesar Imagen</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="project-name">Nombre del Proyecto:</label>
-                            <input type="text" id="project-name" value="default" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tool-input">Parámetros de Entrada (JSON):</label>
-                        <textarea id="tool-input" placeholder='{"param1": "valor1", "param2": "valor2"}'>{}</textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn">
-                        <span>🚀</span> Ejecutar Herramienta
-                    </button>
-                </form>
-                
-                <div id="mcp-loading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Ejecutando herramienta MCP...</p>
-                </div>
-                
-                <div id="mcp-result" class="result"></div>
-            </div>
-            
-            <!-- Tab: Generar SOW -->
-            <div id="sow-generator" class="tab-content">
-                <h2>📋 Generador de Statement of Work (SOW)</h2>
-                <p>Genera documentos SOW profesionales en formato DOCX.</p>
-                
-                <form id="sow-form">
-                    <div class="grid">
-                        <div class="form-group">
-                            <label for="sow-project">Nombre del Proyecto:</label>
-                            <input type="text" id="sow-project" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="sow-client">Cliente:</label>
-                            <input type="text" id="sow-client" value="Cliente">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="sow-objective">Objetivo del Proyecto:</label>
-                        <textarea id="sow-objective" placeholder="Describe el objetivo principal del proyecto..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="sow-scopes">Alcances (uno por línea):</label>
-                        <textarea id="sow-scopes" placeholder="Análisis de infraestructura&#10;Diseño de arquitectura&#10;Implementación de servicios"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn">
-                        <span>📋</span> Generar SOW
-                    </button>
-                </form>
-                
-                <div id="sow-loading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Generando documento SOW...</p>
-                </div>
-                
-                <div id="sow-result" class="result"></div>
-            </div>
-            
-            <!-- Tab: Calculadora AWS -->
-            <div id="calculator" class="tab-content">
-                <h2>🧮 Calculadora de Costos AWS</h2>
-                <p>Genera calculadoras personalizadas en formato XLSX.</p>
-                
-                <form id="calc-form">
-                    <div class="grid">
-                        <div class="form-group">
-                            <label for="calc-project">Nombre del Proyecto:</label>
-                            <input type="text" id="calc-project" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="calc-region">Región AWS:</label>
-                            <select id="calc-region">
-                                <option value="us-east-1">US East (N. Virginia)</option>
-                                <option value="us-west-2">US West (Oregon)</option>
-                                <option value="eu-west-1">Europe (Ireland)</option>
-                                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="calc-requirements">Requerimientos Adicionales (JSON):</label>
-                        <textarea id="calc-requirements" placeholder='{"compute": {"ec2_instances": [{"type": "t3.medium", "quantity": 2}]}}'>{}</textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn">
-                        <span>🧮</span> Generar Calculadora
-                    </button>
-                </form>
-                
-                <div id="calc-loading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Generando calculadora AWS...</p>
-                </div>
-                
-                <div id="calc-result" class="result"></div>
-            </div>
-            
-            <!-- Tab: Archivos -->
-            <div id="files" class="tab-content">
-                <h2>📁 Gestión de Archivos</h2>
-                <p>Visualiza y descarga archivos generados por proyecto.</p>
-                
-                <div class="form-group">
-                    <label for="files-project">Proyecto:</label>
-                    <input type="text" id="files-project" value="default" placeholder="Nombre del proyecto">
-                    <button type="button" class="btn" onclick="loadFiles()" style="margin-top: 10px;">
-                        <span>🔍</span> Buscar Archivos
-                    </button>
-                </div>
-                
-                <div id="files-loading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Cargando archivos...</p>
-                </div>
-                
-                <div id="files-result"></div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Procesando con Bedrock...</p>
+                <small id="loadingStatus">Analizando requerimientos</small>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <script src="bedrock-client.js"></script>
     <script>
-        // Configuración
-        const API_BASE = 'http://localhost:8000';
-        
-        // Funciones de UI
-        function showTab(tabName) {
-            // Ocultar todos los tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
             });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
+
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
             });
-            
-            // Mostrar tab seleccionado
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+
+            // Verificar estado del backend
+            checkBackendStatus();
         }
-        
-        function showLoading(elementId) {
-            document.getElementById(elementId).style.display = 'block';
-        }
-        
-        function hideLoading(elementId) {
-            document.getElementById(elementId).style.display = 'none';
-        }
-        
-        function showResult(elementId, content, isError = false) {
-            const resultDiv = document.getElementById(elementId);
-            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
-            resultDiv.innerHTML = content;
-            resultDiv.style.display = 'block';
-        }
-        
-        // Manejo de formularios
-        document.getElementById('mcp-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const toolName = document.getElementById('tool-name').value;
-            const projectName = document.getElementById('project-name').value;
-            const toolInput = document.getElementById('tool-input').value;
+
+        async function checkBackendStatus() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
             
             try {
-                const input = JSON.parse(toolInput);
-                input.project_name = projectName;
-                
-                showLoading('mcp-loading');
-                hideResult('mcp-result');
-                
-                const response = await fetch(`${API_BASE}/bedrock/tool-use`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        toolUse: {
-                            name: toolName,
-                            toolUseId: 'web-' + Date.now(),
-                            input: input
-                        }
-                    })
-                });
-                
-                const result = await response.json();
-                hideLoading('mcp-loading');
-                
+                const response = await fetch('/health');
                 if (response.ok) {
-                    let content = '<h3>✅ Herramienta ejecutada exitosamente</h3>';
-                    if (result.toolResult && result.toolResult.content) {
-                        result.toolResult.content.forEach(item => {
-                            if (item.text) {
-                                content += `<p>${item.text}</p>`;
-                            }
-                        });
-                    }
-                    showResult('mcp-result', content);
+                    statusIndicator.className = 'fas fa-circle status-indicator online';
+                    statusText.textContent = 'Conectado';
                 } else {
-                    showResult('mcp-result', `<h3>❌ Error</h3><p>${result.detail || 'Error desconocido'}</p>`, true);
+                    throw new Error('Backend no disponible');
                 }
-                
             } catch (error) {
-                hideLoading('mcp-loading');
-                showResult('mcp-result', `<h3>❌ Error</h3><p>${error.message}</p>`, true);
-            }
-        });
-        
-        document.getElementById('sow-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const projectName = document.getElementById('sow-project').value;
-            const clientName = document.getElementById('sow-client').value;
-            const objective = document.getElementById('sow-objective').value;
-            const scopes = document.getElementById('sow-scopes').value.split('\n').filter(s => s.trim());
-            
-            try {
-                showLoading('sow-loading');
-                hideResult('sow-result');
-                
-                const response = await fetch(`${API_BASE}/documents/sow/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        project_name: projectName,
-                        client_name: clientName,
-                        objective: objective,
-                        scopes: scopes
-                    })
-                });
-                
-                const result = await response.json();
-                hideLoading('sow-loading');
-                
-                if (response.ok) {
-                    let content = '<h3>✅ SOW generado exitosamente</h3>';
-                    content += `<p><strong>Archivo:</strong> ${result.filename}</p>`;
-                    content += `<p><strong>Tamaño:</strong> ${(result.size_bytes / 1024).toFixed(2)} KB</p>`;
-                    content += `<p><strong>Tiempo:</strong> ${result.processing_time.toFixed(2)}s</p>`;
-                    if (result.presigned_url) {
-                        content += `<a href="${result.presigned_url}" class="download-link" target="_blank">📥 Descargar SOW</a>`;
-                    }
-                    showResult('sow-result', content);
-                } else {
-                    showResult('sow-result', `<h3>❌ Error</h3><p>${result.detail?.message || 'Error desconocido'}</p>`, true);
-                }
-                
-            } catch (error) {
-                hideLoading('sow-loading');
-                showResult('sow-result', `<h3>❌ Error</h3><p>${error.message}</p>`, true);
-            }
-        });
-        
-        document.getElementById('calc-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const projectName = document.getElementById('calc-project').value;
-            const region = document.getElementById('calc-region').value;
-            const requirements = document.getElementById('calc-requirements').value;
-            
-            try {
-                const reqData = JSON.parse(requirements);
-                
-                showLoading('calc-loading');
-                hideResult('calc-result');
-                
-                const response = await fetch(`${API_BASE}/documents/calculator/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        project_name: projectName,
-                        region: region,
-                        ...reqData
-                    })
-                });
-                
-                const result = await response.json();
-                hideLoading('calc-loading');
-                
-                if (response.ok) {
-                    let content = '<h3>✅ Calculadora generada exitosamente</h3>';
-                    content += `<p><strong>Archivo:</strong> ${result.filename}</p>`;
-                    content += `<p><strong>Tamaño:</strong> ${(result.size_bytes / 1024).toFixed(2)} KB</p>`;
-                    content += `<p><strong>Tiempo:</strong> ${result.processing_time.toFixed(2)}s</p>`;
-                    if (result.presigned_url) {
-                        content += `<a href="${result.presigned_url}" class="download-link" target="_blank">📥 Descargar Calculadora</a>`;
-                    }
-                    showResult('calc-result', content);
-                } else {
-                    showResult('calc-result', `<h3>❌ Error</h3><p>${result.detail?.message || 'Error desconocido'}</p>`, true);
-                }
-                
-            } catch (error) {
-                hideLoading('calc-loading');
-                showResult('calc-result', `<h3>❌ Error</h3><p>${error.message}</p>`, true);
-            }
-        });
-        
-        async function loadFiles() {
-            const projectName = document.getElementById('files-project').value;
-            
-            try {
-                showLoading('files-loading');
-                
-                const response = await fetch(`${API_BASE}/projects/${projectName}/files`);
-                const result = await response.json();
-                
-                hideLoading('files-loading');
-                
-                if (response.ok) {
-                    let content = `<h3>📁 Archivos del proyecto: ${result.project}</h3>`;
-                    content += `<p>Total: ${result.count} archivo(s)</p>`;
-                    
-                    if (result.files && result.files.length > 0) {
-                        content += '<div style="margin-top: 20px;">';
-                        result.files.forEach(file => {
-                            content += `
-                                <div class="feature-card">
-                                    <h4>${file.filename || file.key}</h4>
-                                    <p><strong>Tamaño:</strong> ${file.size ? (file.size / 1024).toFixed(2) + ' KB' : 'N/A'}</p>
-                                    <p><strong>Modificado:</strong> ${file.last_modified || 'N/A'}</p>
-                                    ${file.url ? `<a href="${file.url}" class="download-link" target="_blank">📥 Descargar</a>` : ''}
-                                </div>
-                            `;
-                        });
-                        content += '</div>';
-                    } else {
-                        content += '<p>No se encontraron archivos para este proyecto.</p>';
-                    }
-                    
-                    document.getElementById('files-result').innerHTML = content;
-                } else {
-                    document.getElementById('files-result').innerHTML = `<div class="result error"><h3>❌ Error</h3><p>${result.detail || 'Error cargando archivos'}</p></div>`;
-                }
-                
-            } catch (error) {
-                hideLoading('files-loading');
-                document.getElementById('files-result').innerHTML = `<div class="result error"><h3>❌ Error</h3><p>${error.message}</p></div>`;
+                statusIndicator.className = 'fas fa-circle status-indicator offline';
+                statusText.textContent = 'Desconectado';
             }
         }
-        
-        function hideResult(elementId) {
-            document.getElementById(elementId).style.display = 'none';
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            // Limpiar input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Agregar mensaje del usuario
+            addMessage('user', message);
+
+            // Mostrar loading
+            showLoading();
+
+            try {
+                // Llamar a Bedrock con el mensaje
+                const response = await callBedrock(message);
+                addMessage('assistant', response);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('error', 'Error al procesar el mensaje: ' + error.message);
+            } finally {
+                hideLoading();
+            }
         }
-        
-        // Cargar archivos por defecto al cargar la página
-        window.addEventListener('load', () => {
-            // Opcional: cargar archivos del proyecto default
-        });
+
+        function addMessage(type, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            let icon = '';
+            switch(type) {
+                case 'user':
+                    icon = '<i class="fas fa-user"></i>';
+                    break;
+                case 'assistant':
+                    icon = '<i class="fas fa-robot"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    break;
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${icon}
+                    <div class="text">${formatMessage(content)}</div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function formatMessage(content) {
+            // Convertir URLs en enlaces
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            content = content.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+            
+            // Convertir saltos de línea
+            content = content.replace(/\n/g, '<br>');
+            
+            return content;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
     </script>
 </body>
 </html>
