@@ -28,11 +28,6 @@ bedrock-mcp-backend/
 ├── requirements.txt       # Dependencias Python
 ├── start.sh              # Script de inicio
 └── README.md             # Documentación
-
-mcp-s3-wrapper/           # Wrapper MCP con interceptación S3
-├── app.py                # Proxy MCP con subida S3
-├── requirements.txt      # Dependencias
-└── README.md            # Documentación del wrapper
 ```
 
 ## 🚀 Instalación y Uso

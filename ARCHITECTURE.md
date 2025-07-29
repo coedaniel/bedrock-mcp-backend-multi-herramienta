@@ -40,11 +40,6 @@ graph LR
 - **Estructura**: `arquitecturas/{proyecto}/{herramienta}/{timestamp}_{uuid}_{archivo}`
 - **URLs**: Presignadas con expiración de 1 hora
 
-### 5️⃣ **MCP S3 Wrapper** (Opcional - Puerto 8001)
-- **Función**: Intercepta herramientas específicas
-- **Objetivo**: Agregar subida automática a S3
-- **Estado**: Implementado pero limitado por MCP original
-
 ## 📊 Formato de Mensajes
 
 ### Entrada (Bedrock → Backend)
@@ -90,9 +85,6 @@ MCP_BASE_URL=https://mcp.danielingram.shop/bedrock/tool-use
 USE_PRESIGNED_URLS=true
 PRESIGNED_URL_EXPIRATION=3600
 LOG_LEVEL=INFO
-
-# MCP S3 Wrapper (si se usa)
-ORIGINAL_MCP_URL=https://mcp.danielingram.shop/bedrock/tool-use
 ```
 
 ### Permisos IAM
