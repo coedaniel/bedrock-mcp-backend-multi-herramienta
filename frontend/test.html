@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Chat</title>
+</head>
+<body>
+    <input type="text" id="messageInput" placeholder="Escribe tu mensaje">
+    <button onclick="testSend()">Enviar</button>
+    <div id="result"></div>
+
+    <script>
+        async function testSend() {
+            const message = document.getElementById('messageInput').value;
+            console.log('Enviando:', message);
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        model: "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                        temperature: 0.7,
+                        max_tokens: 100
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

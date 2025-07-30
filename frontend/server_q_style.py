@@ -81,7 +81,11 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 
                 # Send response
                 self.send_response(response.getcode())
-                self.send_header('Content-Type', 'application/json')
+                # Only set JSON content type for API responses
+                if self.path.startswith(('/chat', '/system-prompt', '/health', '/security-status', '/list-files', '/rate-limit-status', '/upload-file', '/upload-json')):
+                    self.send_header('Content-Type', 'application/json')
+                else:
+                    self.send_header('Content-Type', response.headers.get('Content-Type', 'application/json'))
                 self.end_headers()
                 self.wfile.write(response_data)
                 
