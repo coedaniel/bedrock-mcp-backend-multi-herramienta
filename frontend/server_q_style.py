@@ -34,10 +34,12 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def do_GET(self):
-        # Handle API requests
-        if self.path.startswith('/system-prompt') or self.path.startswith('/health') or \
-           self.path.startswith('/security-status') or self.path.startswith('/list-files') or \
-           self.path.startswith('/rate-limit-status'):
+        # Handle API requests - proxy to backend
+        if (self.path.startswith('/system-prompt') or 
+            self.path.startswith('/health') or 
+            self.path.startswith('/security-status') or 
+            self.path.startswith('/list-files') or 
+            self.path.startswith('/rate-limit-status')):
             self.proxy_to_backend()
         # Handle static files
         elif self.path == '/' or self.path == '/index.html':
