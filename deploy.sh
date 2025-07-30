@@ -102,7 +102,7 @@ start_services() {
     sleep 5
     
     # Verificar que el backend esté corriendo
-    if ! curl -s http://localhost:8001/health > /dev/null; then
+    if ! curl -s http://localhost:8000/health > /dev/null; then
         error "Backend no pudo iniciar correctamente"
         exit 1
     fi
@@ -132,7 +132,7 @@ health_check() {
     log "Verificando salud del sistema..."
     
     # Verificar backend
-    BACKEND_STATUS=$(curl -s http://localhost:8001/health | jq -r '.status' 2>/dev/null || echo "error")
+    BACKEND_STATUS=$(curl -s http://localhost:8000/health | jq -r '.status' 2>/dev/null || echo "error")
     if [ "$BACKEND_STATUS" != "healthy" ]; then
         error "Backend no está saludable"
         exit 1
@@ -171,17 +171,17 @@ show_system_info() {
     log "Información del sistema:"
     echo "========================"
     echo "🌐 URLs de acceso:"
-    echo "   • Público Principal: https://bedrock-playground.danielingram.shop"
-    echo "   • Seguridad:         https://bedrock-playground.danielingram.shop/security.html"
-    echo "   • Monitoreo:         https://bedrock-playground.danielingram.shop/monitoring.html"
-    echo "   • Archivos S3:       https://bedrock-playground.danielingram.shop/s3-files.html"
+    echo "   • Público Principal: https://bedrock-mcp.danielingram.shop"
+    echo "   • Seguridad:         https://bedrock-mcp.danielingram.shop/security.html"
+    echo "   • Monitoreo:         https://bedrock-mcp.danielingram.shop/monitoring.html"
+    echo "   • Archivos S3:       https://bedrock-mcp.danielingram.shop/s3-files.html"
     echo "   • MCP:               https://bedrock-mcp.danielingram.shop"
     echo ""
     echo "📊 Endpoints de API:"
-    echo "   • Health:            https://bedrock-playground.danielingram.shop/health"
-    echo "   • Security Status:   https://bedrock-playground.danielingram.shop/security-status"
-    echo "   • S3 Files:          https://bedrock-playground.danielingram.shop/list-files"
-    echo "   • Upload File:       https://bedrock-playground.danielingram.shop/upload-file"
+    echo "   • Health:            https://bedrock-mcp.danielingram.shop/health"
+    echo "   • Security Status:   https://bedrock-mcp.danielingram.shop/security-status"
+    echo "   • S3 Files:          https://bedrock-mcp.danielingram.shop/list-files"
+    echo "   • Upload File:       https://bedrock-mcp.danielingram.shop/upload-file"
     echo ""
     echo "📁 Logs:"
     echo "   • Backend:           logs/backend.log"
@@ -213,7 +213,7 @@ main() {
     show_system_info
     
     log "🎉 DESPLIEGUE COMPLETADO EXITOSAMENTE"
-    log "El sistema está listo para usar en: https://bedrock-playground.danielingram.shop"
+    log "El sistema está listo para usar en: https://bedrock-mcp.danielingram.shop"
 }
 
 # Manejo de señales para cleanup

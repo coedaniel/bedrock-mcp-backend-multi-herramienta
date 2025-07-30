@@ -55,7 +55,7 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             post_data = self.rfile.read(content_length) if content_length > 0 else None
             
             # Create request to backend
-            backend_url = f"http://localhost:8001{self.path}"
+            backend_url = f"http://localhost:8000{self.path}"
             
             if self.command == 'POST':
                 req = urllib.request.Request(
@@ -110,8 +110,8 @@ if __name__ == "__main__":
     # Change to frontend directory
     os.chdir('/home/ec2-user/bedrock-chat-new/frontend')
     
-    with socketserver.TCPServer(("", PORT), CORSHTTPRequestHandler) as httpd:
+    with socketserver.TCPServer(("0.0.0.0", PORT), CORSHTTPRequestHandler) as httpd:
         print(f"🚀 Frontend Amazon Q Style server running on port {PORT}")
-        print(f"🌐 Public Access: https://bedrock-playground.danielingram.shop")
-        print(f"🔗 Backend proxy: localhost:8001")
+        print(f"🌐 Public Access: https://bedrock-mcp.danielingram.shop")
+        print(f"🔗 Backend proxy: localhost:8000")
         httpd.serve_forever()
