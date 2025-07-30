@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bedrock Playground Optimized - Arquitecto AWS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .playground-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .chat-message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .processing-step {
+            transition: all 0.3s ease;
+        }
+        .step-running {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            animation: pulse 2s infinite;
+        }
+        .step-completed {
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+        .step-failed {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="playground-gradient text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-robot text-2xl"></i>
+                    <h1 class="text-2xl font-bold">Bedrock Playground</h1>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm">Optimized</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white/20 px-3 py-1 rounded-full text-sm font-medium" id="currentModel">
+                        Claude 3.5 Sonnet v1
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-6 max-w-7xl">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Settings Panel -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-sliders-h mr-2 text-blue-500"></i>
+                        Configuración
+                    </h3>
+                    
+                    <!-- Model Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Modelo</label>
+                        <select id="modelSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="anthropic.claude-3-5-sonnet-20240620-v1:0">Claude 3.5 Sonnet v1</option>
+                            <option value="amazon.nova-pro-v1:0">Amazon Nova Pro v1</option>
+                        </select>
+                    </div>
+
+                    <!-- Temperature -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Temperatura: <span id="tempValue">0.7</span>
+                        </label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" 
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Max Tokens -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+                        <input type="number" id="maxTokens" value="1000" min="100" max="4000" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- MCP Control -->
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="useMCP" checked class="mr-2">
+                            <span class="text-sm font-medium text-gray-700">Usar MCP (Auto)</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1">El sistema decide automáticamente cuándo usar MCP</p>
+                    </div>
+
+                    <!-- Deliverables Control -->
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="generateDeliverables" class="mr-2">
+                            <span class="text-sm font-medium text-gray-700">Forzar Entregables</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1">Generar diagramas y archivos siempre</p>
+                    </div>
+
+                    <!-- Clear Chat -->
+                    <button onclick="clearChat()" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors">
+                        <i class="fas fa-trash mr-2"></i>
+                        Limpiar Chat
+                    </button>
+                </div>
+
+                <!-- Processing Steps Panel -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-cogs mr-2 text-purple-500"></i>
+                        Proceso Interno
+                    </h3>
+                    <div id="processingSteps" class="space-y-2">
+                        <div class="text-center text-gray-500 text-sm">
+                            Los pasos del procesamiento aparecerán aquí
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-green-500"></i>
+                        Estadísticas
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Mensajes:</span>
+                            <span id="messageCount" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tokens:</span>
+                            <span id="tokenCount" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Costo est.:</span>
+                            <span id="costEstimate" class="font-semibold">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tiempo prom.:</span>
+                            <span id="avgTime" class="font-semibold">0s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-lg h-[700px] flex flex-col">
+                    
+                    <!-- Chat Messages -->
+                    <div class="flex-1 overflow-y-auto p-6" id="chatMessages">
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-comments text-4xl mb-4"></i>
+                            <p class="text-lg">¡Hola! Soy tu Arquitecto AWS optimizado.</p>
+                            <p class="text-sm">Respuestas rápidas con MCP inteligente cuando sea necesario.</p>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t border-gray-200 p-6">
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <textarea 
+                                    id="messageInput" 
+                                    placeholder="Ej: 'hola' (respuesta rápida) o 'necesito migrar VMs con diagrama' (MCP + entregables)"
+                                    class="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                ></textarea>
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <button 
+                                    id="sendButton"
+                                    onclick="sendMessage()" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors flex items-center justify-center"
+                                >
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                <button 
+                                    onclick="clearInput()" 
+                                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+                                >
+                                    <i class="fas fa-eraser"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let messageCount = 0;
+        let totalTokens = 0;
+        let totalCost = 0;
+        let totalTime = 0;
+        let isLoading = false;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('temperature').addEventListener('input', function() {
+                document.getElementById('tempValue').textContent = this.value;
+            });
+
+            document.getElementById('modelSelect').addEventListener('change', function() {
+                const modelName = this.options[this.selectedIndex].text;
+                document.getElementById('currentModel').textContent = modelName;
+            });
+
+            document.getElementById('messageInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+
+        function updateProcessingSteps(steps) {
+            const container = document.getElementById('processingSteps');
+            container.innerHTML = '';
+
+            steps.forEach(step => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `processing-step p-3 rounded-lg text-white text-sm step-${step.status}`;
+                
+                let icon = '';
+                switch(step.status) {
+                    case 'running':
+                        icon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+                        break;
+                    case 'completed':
+                        icon = '<i class="fas fa-check mr-2"></i>';
+                        break;
+                    case 'failed':
+                        icon = '<i class="fas fa-times mr-2"></i>';
+                        break;
+                }
+
+                stepDiv.innerHTML = `
+                    ${icon}
+                    <div class="font-medium">${getStepName(step.step)}</div>
+                    <div class="text-xs opacity-90 mt-1">${step.details}</div>
+                    ${step.duration > 0 ? `<div class="text-xs opacity-75">${step.duration.toFixed(2)}s</div>` : ''}
+                `;
+
+                container.appendChild(stepDiv);
+            });
+        }
+
+        function getStepName(step) {
+            const names = {
+                'analysis': 'Análisis de Consulta',
+                'mcp_processing': 'Procesamiento MCP',
+                'bedrock_processing': 'Procesamiento Bedrock'
+            };
+            return names[step] || step;
+        }
+
+        async function sendMessage() {
+            if (isLoading) return;
+
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            isLoading = true;
+            updateSendButton(true);
+
+            // Agregar mensaje del usuario
+            addMessage('user', message);
+            messageInput.value = '';
+
+            // Limpiar pasos anteriores
+            document.getElementById('processingSteps').innerHTML = '<div class="text-center text-gray-500 text-sm">Procesando...</div>';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        model: document.getElementById('modelSelect').value,
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        max_tokens: parseInt(document.getElementById('maxTokens').value),
+                        use_mcp: document.getElementById('useMCP').checked,
+                        generate_deliverables: document.getElementById('generateDeliverables').checked
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Mostrar pasos de procesamiento
+                    updateProcessingSteps(data.processing_steps || []);
+                    
+                    // Agregar respuesta
+                    addMessage('assistant', data.response, false, data);
+                    
+                    // Actualizar estadísticas
+                    updateStats(data);
+                } else {
+                    addMessage('error', `Error: ${data.detail || 'Error desconocido'}`);
+                }
+
+            } catch (error) {
+                addMessage('error', `Error de conexión: ${error.message}`);
+            } finally {
+                isLoading = false;
+                updateSendButton(false);
+            }
+        }
+
+        function addMessage(type, content, isLoading = false, metadata = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageId = 'msg-' + Date.now();
+            
+            let iconClass, bgClass, textClass;
+            
+            switch(type) {
+                case 'user':
+                    iconClass = 'fas fa-user';
+                    bgClass = 'bg-blue-50 border-l-4 border-blue-500';
+                    textClass = 'text-gray-800';
+                    break;
+                case 'assistant':
+                    iconClass = 'fas fa-robot';
+                    bgClass = 'bg-green-50 border-l-4 border-green-500';
+                    textClass = 'text-gray-800';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    bgClass = 'bg-red-50 border-l-4 border-red-500';
+                    textClass = 'text-red-800';
+                    break;
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.id = messageId;
+            messageDiv.className = `chat-message mb-4 p-4 rounded-lg ${bgClass}`;
+            
+            let messageContent = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <i class="${iconClass} text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="${textClass} whitespace-pre-wrap">${formatMessage(content)}</div>
+            `;
+
+            // Agregar metadata si existe
+            if (metadata) {
+                messageContent += `
+                    <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-clock mr-1"></i>${metadata.total_processing_time?.toFixed(2)}s
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-hashtag mr-1"></i>${metadata.token_count} tokens
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-dollar-sign mr-1"></i>$${metadata.cost_estimate?.toFixed(4)}
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-tools mr-1"></i>${metadata.tools_used?.join(', ') || 'N/A'}
+                        </span>
+                    </div>
+                `;
+
+                // Agregar archivos S3 si existen
+                if (metadata.s3_files && metadata.s3_files.length > 0) {
+                    messageContent += `
+                        <div class="mt-3">
+                            <h4 class="font-semibold text-sm mb-2">
+                                <i class="fas fa-file-download mr-1"></i>Archivos generados:
+                            </h4>
+                            <div class="space-y-1">
+                    `;
+                    
+                    metadata.s3_files.forEach(file => {
+                        const fileName = file.split('/').pop().split('?')[0];
+                        messageContent += `
+                            <a href="${file}" target="_blank" 
+                               class="inline-block px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-download mr-1"></i>${fileName}
+                            </a>
+                        `;
+                    });
+                    
+                    messageContent += `
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            messageContent += `
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = messageContent;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            return messageId;
+        }
+
+        function formatMessage(text) {
+            // Convertir URLs en links
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+            
+            // Formatear texto en negrita
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Formatear código inline
+            text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-200 px-1 rounded">$1</code>');
+            
+            return text;
+        }
+
+        function updateStats(data) {
+            messageCount++;
+            totalTokens += data.token_count || 0;
+            totalCost += data.cost_estimate || 0;
+            totalTime += data.total_processing_time || 0;
+
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('tokenCount').textContent = totalTokens;
+            document.getElementById('costEstimate').textContent = '$' + totalCost.toFixed(4);
+            document.getElementById('avgTime').textContent = messageCount > 0 ? (totalTime / messageCount).toFixed(1) + 's' : '0s';
+        }
+
+        function updateSendButton(loading) {
+            const button = document.getElementById('sendButton');
+            if (loading) {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.disabled = true;
+                button.classList.add('opacity-50');
+            } else {
+                button.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                button.disabled = false;
+                button.classList.remove('opacity-50');
+            }
+        }
+
+        function clearChat() {
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-comments text-4xl mb-4"></i>
+                    <p class="text-lg">¡Hola! Soy tu Arquitecto AWS optimizado.</p>
+                    <p class="text-sm">Respuestas rápidas con MCP inteligente cuando sea necesario.</p>
+                </div>
+            `;
+            
+            document.getElementById('processingSteps').innerHTML = '<div class="text-center text-gray-500 text-sm">Los pasos del procesamiento aparecerán aquí</div>';
+            
+            // Reset stats
+            messageCount = 0;
+            totalTokens = 0;
+            totalCost = 0;
+            totalTime = 0;
+            updateStats({token_count: 0, cost_estimate: 0, total_processing_time: 0});
+        }
+
+        function clearInput() {
+            document.getElementById('messageInput').value = '';
+        }
+    </script>
+</body>
+</html>

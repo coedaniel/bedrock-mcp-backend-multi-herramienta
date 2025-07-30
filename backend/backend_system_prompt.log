@@ -1,0 +1,55 @@
+/home/ec2-user/.local/lib/python3.9/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_used" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+INFO:botocore.credentials:Found credentials from IAM Role: SSMInstanceProfile
+INFO:     Started server process [69381]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:38958 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53074 - "GET /system-prompt HTTP/1.1" 200 OK
+INFO:__main__:Chat request: hola...
+INFO:     127.0.0.1:53090 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: Hola...
+INFO:     127.0.0.1:50968 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: quiro saber que es system prompt de bedrock...
+INFO:     127.0.0.1:34364 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: me puedes hacer un diagram con los iconos oficiale...
+INFO:     127.0.0.1:44886 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: Actua como arquitecto de soluciones AWS y consulto...
+INFO:     127.0.0.1:59268 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: panchoshotdog...
+INFO:     127.0.0.1:40106 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: si sera un proyecto de migraccion...
+INFO:     127.0.0.1:33408 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: necesito costos de migración...
+INFO:     127.0.0.1:45816 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: necesito un diagrama de arquitectura...
+INFO:     127.0.0.1:55324 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: hola necesito un diagrama...
+INFO:     127.0.0.1:39312 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: hola necesito un diagrama de ec2...
+INFO:     127.0.0.1:59706 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: con los iconos oficiales...
+INFO:     127.0.0.1:45416 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: yo quiero que lo hagas tu el diagrama con los icon...
+INFO:     127.0.0.1:46012 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: puedes hablarme como mexicano chilango...
+INFO:     127.0.0.1:34010 - "POST /chat HTTP/1.1" 200 OK
+INFO:__main__:Chat request: puedes hablarme como mexicano chilango...
+INFO:     127.0.0.1:46072 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43606 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55494 - "GET /system-prompt HTTP/1.1" 200 OK
+INFO:__main__:Chat request: Hola, ¿qué es Amazon S3?...
+INFO:     127.0.0.1:35140 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38390 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38394 - "GET /system-prompt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47502 - "GET /system-prompt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47516 - "POST /system-prompt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37220 - "GET /system-prompt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37228 - "POST /system-prompt/reset HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69381]
