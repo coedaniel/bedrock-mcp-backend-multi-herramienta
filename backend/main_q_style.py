@@ -610,11 +610,24 @@ async def get_rate_limit_status(client_ip: str):
     except Exception as e:
         logger.error(f"Error getting rate limit status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-            "MCP Integration",
-            "Intelligent Routing",
-            "Processing Transparency"
-        ]
-    }
+
+@app.delete("/delete-file")
+async def delete_s3_file(s3_url: str):
+    """Eliminar archivo de S3"""
+    try:
+        success = s3_uploader.delete_file(s3_url)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "File deleted successfully"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to delete file")
+    
+    except Exception as e:
+        logger.error(f"Error deleting file: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
