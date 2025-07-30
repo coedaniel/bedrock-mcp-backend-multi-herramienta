@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivos S3 - Bedrock Playground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: 12px;
+        }
+        .file-icon-diagram { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .file-icon-document { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .file-icon-json { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .file-icon-text { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .file-icon-html { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-cloud text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Archivos S3</h1>
+                        <p class="text-blue-100">Gestión de archivos generados</p>
+                    </div>
+                </div>
+                <nav class="flex space-x-4">
+                    <a href="index_q_style.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-home mr-2"></i>Inicio
+                    </a>
+                    <a href="security.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-shield-alt mr-2"></i>Seguridad
+                    </a>
+                    <a href="monitoring.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-chart-line mr-2"></i>Monitoreo
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-cloud-upload-alt mr-2 text-blue-500"></i>
+                Subir Archivo
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="fileContent" class="block text-sm font-medium text-gray-700 mb-2">
+                        Contenido del Archivo:
+                    </label>
+                    <textarea id="fileContent" rows="6" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Ingresa el contenido del archivo..."></textarea>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="fileType" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipo de Archivo:
+                        </label>
+                        <select id="fileType" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="text">Texto (.txt)</option>
+                            <option value="document">Documento (.md)</option>
+                            <option value="json">JSON (.json)</option>
+                            <option value="html">HTML (.html)</option>
+                            <option value="diagram">Diagrama (.png)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="fileName" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre del Archivo (opcional):
+                        </label>
+                        <input type="text" id="fileName" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="mi-archivo">
+                    </div>
+                    <button onclick="uploadFile()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Subir Archivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Archivos</p>
+                        <p class="text-2xl font-bold text-blue-600" id="totalFiles">0</p>
+                    </div>
+                    <i class="fas fa-file text-3xl text-blue-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Diagramas</p>
+                        <p class="text-2xl font-bold text-purple-600" id="diagramCount">0</p>
+                    </div>
+                    <i class="fas fa-image text-3xl text-purple-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Documentos</p>
+                        <p class="text-2xl font-bold text-green-600" id="documentCount">0</p>
+                    </div>
+                    <i class="fas fa-file-alt text-3xl text-green-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">JSON/Código</p>
+                        <p class="text-2xl font-bold text-orange-600" id="codeCount">0</p>
+                    </div>
+                    <i class="fas fa-code text-3xl text-orange-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Filters -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-filter mr-2 text-gray-600"></i>
+                    Filtros
+                </h3>
+                <button onclick="loadFiles()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt mr-2"></i>Actualizar
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterFiles('all')" 
+                        class="filter-btn active px-4 py-2 bg-blue-600 text-white rounded-lg transition-colors">
+                    Todos
+                </button>
+                <button onclick="filterFiles('diagram')" 
+                        class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    Diagramas
+                </button>
+                <button onclick="filterFiles('document')" 
+                        class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    Documentos
+                </button>
+                <button onclick="filterFiles('json')" 
+                        class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    JSON
+                </button>
+                <button onclick="filterFiles('text')" 
+                        class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    Texto
+                </button>
+                <button onclick="filterFiles('html')" 
+                        class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    HTML
+                </button>
+            </div>
+        </div>
+
+        <!-- Files List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-folder-open mr-2 text-yellow-500"></i>
+                Archivos Almacenados
+            </h3>
+            <div id="filesList" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-cloud text-4xl mb-4"></i>
+                    <p>No hay archivos disponibles</p>
+                    <p class="text-sm">Los archivos generados aparecerán aquí</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allFiles = [];
+        let currentFilter = 'all';
+
+        async function loadFiles() {
+            try {
+                const response = await fetch('/list-files');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allFiles = data.files;
+                    updateFileStats();
+                    displayFiles();
+                } else {
+                    showError('Error al cargar archivos');
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+                showError('Error de conexión al cargar archivos');
+            }
+        }
+
+        function updateFileStats() {
+            document.getElementById('totalFiles').textContent = allFiles.length;
+            
+            const counts = {
+                diagram: 0,
+                document: 0,
+                json: 0,
+                text: 0,
+                html: 0
+            };
+
+            allFiles.forEach(file => {
+                const type = getFileType(file.filename);
+                if (counts.hasOwnProperty(type)) {
+                    counts[type]++;
+                }
+            });
+
+            document.getElementById('diagramCount').textContent = counts.diagram;
+            document.getElementById('documentCount').textContent = counts.document;
+            document.getElementById('codeCount').textContent = counts.json + counts.html;
+        }
+
+        function displayFiles() {
+            const filesList = document.getElementById('filesList');
+            
+            let filteredFiles = allFiles;
+            if (currentFilter !== 'all') {
+                filteredFiles = allFiles.filter(file => getFileType(file.filename) === currentFilter);
+            }
+
+            if (filteredFiles.length === 0) {
+                filesList.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p>No se encontraron archivos</p>
+                        <p class="text-sm">Intenta con un filtro diferente</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filesList.innerHTML = filteredFiles.map(file => {
+                const fileType = getFileType(file.filename);
+                const icon = getFileIcon(fileType);
+                const iconClass = getFileIconClass(fileType);
+                const size = formatFileSize(file.size);
+                const date = new Date(file.last_modified).toLocaleDateString();
+
+                return `
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="file-icon ${iconClass} text-white">
+                                <i class="${icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${file.filename}</h4>
+                                <p class="text-sm text-gray-500">${size} • ${date}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="${file.url}" target="_blank" 
+                               class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-external-link-alt mr-1"></i>Ver
+                            </a>
+                            <button onclick="deleteFile('${file.url}')" 
+                                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const typeMap = {
+                'png': 'diagram',
+                'jpg': 'diagram',
+                'jpeg': 'diagram',
+                'md': 'document',
+                'json': 'json',
+                'txt': 'text',
+                'html': 'html'
+            };
+            return typeMap[ext] || 'text';
+        }
+
+        function getFileIcon(type) {
+            const icons = {
+                'diagram': 'fas fa-image',
+                'document': 'fas fa-file-alt',
+                'json': 'fas fa-code',
+                'text': 'fas fa-file-text',
+                'html': 'fas fa-code'
+            };
+            return icons[type] || 'fas fa-file';
+        }
+
+        function getFileIconClass(type) {
+            const classes = {
+                'diagram': 'file-icon-diagram',
+                'document': 'file-icon-document',
+                'json': 'file-icon-json',
+                'text': 'file-icon-text',
+                'html': 'file-icon-html'
+            };
+            return classes[type] || 'file-icon-text';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function filterFiles(type) {
+            currentFilter = type;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            event.target.classList.add('active', 'bg-blue-600', 'text-white');
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            displayFiles();
+        }
+
+        async function uploadFile() {
+            const content = document.getElementById('fileContent').value.trim();
+            const fileType = document.getElementById('fileType').value;
+            const fileName = document.getElementById('fileName').value.trim();
+
+            if (!content) {
+                showError('Por favor ingresa el contenido del archivo');
+                return;
+            }
+
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo...';
+            button.disabled = true;
+
+            try {
+                const response = await fetch('/upload-file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        file_type: fileType,
+                        filename: fileName || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Archivo subido exitosamente');
+                    document.getElementById('fileContent').value = '';
+                    document.getElementById('fileName').value = '';
+                    loadFiles(); // Refresh file list
+                } else {
+                    showError('Error al subir archivo: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                showError('Error de conexión al subir archivo');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function deleteFile(s3Url) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/delete-file', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ s3_url: s3Url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Archivo eliminado exitosamente');
+                    loadFiles(); // Refresh file list
+                } else {
+                    showError('Error al eliminar archivo');
+                }
+            } catch (error) {
+                console.error('Error deleting file:', error);
+                showError('Error de conexión al eliminar archivo');
+            }
+        }
+
+        function showError(message) {
+            // Simple error display - could be enhanced with a toast library
+            alert('Error: ' + message);
+        }
+
+        function showSuccess(message) {
+            // Simple success display - could be enhanced with a toast library
+            alert('Éxito: ' + message);
+        }
+
+        // Load files on page load
+        document.addEventListener('DOMContentLoaded', loadFiles);
+
+        // Auto-refresh every 60 seconds
+        setInterval(loadFiles, 60000);
+    </script>
+</body>
+</html>

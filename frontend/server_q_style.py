@@ -20,18 +20,30 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         # Proxy requests to backend
-        if self.path.startswith('/chat') or self.path.startswith('/system-prompt'):
+        if self.path.startswith('/chat') or self.path.startswith('/system-prompt') or \
+           self.path.startswith('/upload-file') or self.path.startswith('/upload-json'):
+            self.proxy_to_backend()
+        else:
+            self.send_error(404, "Not Found")
+
+    def do_DELETE(self):
+        # Proxy DELETE requests to backend
+        if self.path.startswith('/delete-file'):
             self.proxy_to_backend()
         else:
             self.send_error(404, "Not Found")
 
     def do_GET(self):
         # Handle API requests
-        if self.path.startswith('/system-prompt') or self.path.startswith('/health'):
+        if self.path.startswith('/system-prompt') or self.path.startswith('/health') or \
+           self.path.startswith('/security-status') or self.path.startswith('/list-files') or \
+           self.path.startswith('/rate-limit-status'):
             self.proxy_to_backend()
         # Handle static files
         elif self.path == '/' or self.path == '/index.html':
             self.path = '/index_q_style.html'
+            super().do_GET()
+        elif self.path in ['/security.html', '/monitoring.html', '/s3-files.html']:
             super().do_GET()
         else:
             super().do_GET()
@@ -51,6 +63,13 @@ class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     data=post_data,
                     headers={'Content-Type': 'application/json'}
                 )
+            elif self.command == 'DELETE':
+                req = urllib.request.Request(
+                    backend_url,
+                    data=post_data,
+                    headers={'Content-Type': 'application/json'}
+                )
+                req.get_method = lambda: 'DELETE'
             else:
                 req = urllib.request.Request(backend_url)
             
@@ -93,7 +112,6 @@ if __name__ == "__main__":
     
     with socketserver.TCPServer(("", PORT), CORSHTTPRequestHandler) as httpd:
         print(f"🚀 Frontend Amazon Q Style server running on port {PORT}")
-        print(f"📱 Access: http://localhost:{PORT}")
-        print(f"🔗 Public: http://bedrock-playground.danielingram.shop")
-        print(f"🎯 Backend proxy: localhost:8001")
+        print(f"🌐 Public Access: https://bedrock-playground.danielingram.shop")
+        print(f"🔗 Backend proxy: localhost:8001")
         httpd.serve_forever()

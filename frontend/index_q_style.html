@@ -46,6 +46,13 @@
             resize: vertical;
             min-height: 200px;
         }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -61,6 +68,18 @@
                     </span>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- Navigation Links -->
+                    <nav class="flex space-x-2">
+                        <a href="security.html" class="nav-link bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-lg transition-all text-sm">
+                            <i class="fas fa-shield-alt mr-1"></i>Seguridad
+                        </a>
+                        <a href="monitoring.html" class="nav-link bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-lg transition-all text-sm">
+                            <i class="fas fa-chart-line mr-1"></i>Monitoreo
+                        </a>
+                        <a href="s3-files.html" class="nav-link bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-lg transition-all text-sm">
+                            <i class="fas fa-cloud mr-1"></i>S3 Files
+                        </a>
+                    </nav>
                     <div class="bg-white/20 px-3 py-1 rounded-full text-sm font-medium" id="currentModel">
                         Claude 3.5 Sonnet v1
                     </div>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguridad - Bedrock Playground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-active { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-error { background-color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-shield-alt text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Seguridad</h1>
+                        <p class="text-blue-100">Monitoreo y protección del sistema</p>
+                    </div>
+                </div>
+                <nav class="flex space-x-4">
+                    <a href="index_q_style.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-home mr-2"></i>Inicio
+                    </a>
+                    <a href="monitoring.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-chart-line mr-2"></i>Monitoreo
+                    </a>
+                    <a href="s3-files.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-cloud mr-2"></i>Archivos S3
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Estado General</p>
+                        <p class="text-2xl font-bold text-green-600" id="generalStatus">
+                            <span class="status-indicator status-active"></span>Activo
+                        </p>
+                    </div>
+                    <i class="fas fa-shield-check text-3xl text-green-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Rate Limiting</p>
+                        <p class="text-2xl font-bold text-blue-600" id="rateLimitStatus">
+                            <span class="status-indicator status-active"></span>Habilitado
+                        </p>
+                    </div>
+                    <i class="fas fa-tachometer-alt text-3xl text-blue-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Validación</p>
+                        <p class="text-2xl font-bold text-purple-600" id="validationStatus">
+                            <span class="status-indicator status-active"></span>Activa
+                        </p>
+                    </div>
+                    <i class="fas fa-check-circle text-3xl text-purple-500"></i>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Detección</p>
+                        <p class="text-2xl font-bold text-orange-600" id="anomalyStatus">
+                            <span class="status-indicator status-active"></span>Activa
+                        </p>
+                    </div>
+                    <i class="fas fa-search text-3xl text-orange-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Request Statistics -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-chart-bar mr-2 text-blue-500"></i>
+                    Estadísticas (24h)
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Total de Requests</span>
+                        <span class="font-bold text-lg" id="totalRequests">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Validaciones Fallidas</span>
+                        <span class="font-bold text-lg text-red-600" id="failedValidations">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Advertencias</span>
+                        <span class="font-bold text-lg text-yellow-600" id="warnings">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Tasa de Éxito</span>
+                        <span class="font-bold text-lg text-green-600" id="successRate">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Limiting Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-stopwatch mr-2 text-orange-500"></i>
+                    Rate Limiting
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Máximo por Minuto</span>
+                        <span class="font-bold text-lg" id="maxRequests">10</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Ventana de Tiempo</span>
+                        <span class="font-bold text-lg" id="timeWindow">1 min</span>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-4">
+                        <label for="ipCheck" class="block text-sm font-medium text-gray-700 mb-2">
+                            Verificar IP específica:
+                        </label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="ipCheck" placeholder="192.168.1.1" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onclick="checkRateLimit()" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div id="rateLimitResult" class="mt-2 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refresh Button -->
+        <div class="text-center">
+            <button onclick="loadSecurityData()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>Actualizar Datos
+            </button>
+        </div>
+    </main>
+
+    <script>
+        let securityData = {};
+
+        async function loadSecurityData() {
+            try {
+                const response = await fetch('/security-status');
+                securityData = await response.json();
+                updateSecurityDisplay();
+            } catch (error) {
+                console.error('Error loading security data:', error);
+                showError('Error al cargar datos de seguridad');
+            }
+        }
+
+        function updateSecurityDisplay() {
+            // Update statistics
+            document.getElementById('totalRequests').textContent = securityData.last_24_hours?.total_requests || 0;
+            document.getElementById('failedValidations').textContent = securityData.last_24_hours?.failed_validations || 0;
+            document.getElementById('warnings').textContent = securityData.last_24_hours?.warnings || 0;
+            document.getElementById('successRate').textContent = (securityData.last_24_hours?.success_rate || 100).toFixed(1) + '%';
+
+            // Update configuration
+            document.getElementById('maxRequests').textContent = securityData.rate_limiting?.max_requests_per_minute || 10;
+        }
+
+        async function checkRateLimit() {
+            const ip = document.getElementById('ipCheck').value.trim();
+            if (!ip) {
+                showError('Por favor ingresa una IP válida');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/rate-limit-status/${ip}`);
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('rateLimitResult');
+                resultDiv.innerHTML = `
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2">
+                        <strong>IP:</strong> ${data.client_ip}<br>
+                        <strong>Requests restantes:</strong> ${data.remaining_requests}/${data.max_requests}<br>
+                        <strong>Ventana:</strong> ${data.window_minutes} minutos
+                    </div>
+                `;
+            } catch (error) {
+                showError('Error al verificar rate limit');
+            }
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('rateLimitResult');
+            resultDiv.innerHTML = `<div class="text-red-600">${message}</div>`;
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadSecurityData);
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadSecurityData, 30000);
+    </script>
+</body>
+</html>
