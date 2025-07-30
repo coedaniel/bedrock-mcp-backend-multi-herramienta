@@ -6,49 +6,52 @@
     <title>Bedrock Playground - Amazon Q Style</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
         .playground-gradient {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .q-style-badge {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
         }
-        .nav-link {
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover {
-            transform: translateY(-1px);
-        }
-        .message-user {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .message-assistant {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .processing-step {
-            transition: all 0.3s ease;
-        }
-        .processing-step:hover {
-            transform: translateX(5px);
-        }
-        #chatMessages {
-            scroll-behavior: smooth;
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
+        .chat-message {
+            animation: fadeIn 0.3s ease-in;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .pulse-loading {
+        .processing-step {
+            transition: all 0.3s ease;
+        }
+        .step-running {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
             animation: pulse 2s infinite;
+        }
+        .step-completed {
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+        .step-failed {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.7; }
+        }
+        .system-prompt-editor {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            resize: vertical;
+            min-height: 200px;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
     </style>
 </head>
@@ -94,7 +97,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold flex items-center">
                     <i class="fas fa-edit mr-2 text-purple-500"></i>
-                    System Prompt Editor
+                    System Prompt - Editable como Bedrock Playground
                 </h3>
                 <div class="flex space-x-2">
                     <button onclick="saveSystemPrompt()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
@@ -111,17 +114,19 @@
             <div class="mb-4">
                 <textarea 
                     id="systemPromptEditor" 
-                    class="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"
-                    placeholder="Ingresa tu System Prompt personalizado aquí...">
-                </textarea>
+                    class="system-prompt-editor w-full"
+                    placeholder="Cargando System Prompt..."
+                ></textarea>
             </div>
             <div class="text-sm text-gray-600">
                 <i class="fas fa-info-circle mr-1"></i>
-                <strong>Como Bedrock Playground:</strong> Este System Prompt define el comportamiento del modelo durante toda la conversación.
+                <strong>Como Bedrock Playground:</strong> Este System Prompt define el comportamiento del modelo durante toda la conversación. 
+                Puedes editarlo para cambiar el rol, estilo, o especialización del asistente.
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
             <!-- Settings Panel -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-lg p-6">
@@ -129,7 +134,7 @@
                         <i class="fas fa-sliders-h mr-2 text-blue-500"></i>
                         Configuración
                     </h3>
-
+                    
                     <!-- Model Selection -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Modelo</label>
@@ -180,7 +185,7 @@
                             <span class="text-sm font-medium">Amazon Q Style</span>
                         </div>
                         <p class="text-xs text-blue-600 mt-1">
-                            Flujo conversacional inteligente con System Prompt editable
+                            Flujo conversacional inteligente + System Prompt editable
                         </p>
                     </div>
 
@@ -195,11 +200,11 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <i class="fas fa-cogs mr-2 text-purple-500"></i>
-                        Pasos de Procesamiento
+                        Proceso Interno
                     </h3>
                     <div id="processingSteps" class="space-y-2">
                         <div class="text-center text-gray-500 text-sm">
-                            Esperando mensaje...
+                            Los pasos del procesamiento aparecerán aquí
                         </div>
                     </div>
                 </div>
@@ -238,6 +243,7 @@
             <!-- Chat Area -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-xl shadow-lg h-[700px] flex flex-col">
+                    
                     <!-- Chat Messages -->
                     <div class="flex-1 overflow-y-auto p-6" id="chatMessages">
                         <div class="text-center text-gray-500 py-8">
@@ -257,10 +263,10 @@
                             <div class="flex-1">
                                 <textarea 
                                     id="messageInput" 
-                                    placeholder="Escribe tu mensaje aquí... (Enter para enviar, Shift+Enter para nueva línea)"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
-                                    rows="3">
-                                </textarea>
+                                    placeholder="Como Amazon Q CLI, te haré preguntas específicas antes de generar entregables..."
+                                    class="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                ></textarea>
                             </div>
                             <div class="flex flex-col space-y-2">
                                 <button 
@@ -366,6 +372,7 @@
         }
 
         function showNotification(message, type) {
+            // Crear notificación temporal
             const notification = document.createElement('div');
             notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
                 type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -374,8 +381,54 @@
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                notification.remove();
+                document.body.removeChild(notification);
             }, 3000);
+        }
+
+        function updateProcessingSteps(steps) {
+            const container = document.getElementById('processingSteps');
+            container.innerHTML = '';
+
+            steps.forEach(step => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `processing-step p-3 rounded-lg text-white text-sm step-${step.status}`;
+                
+                let icon = '';
+                switch(step.status) {
+                    case 'running':
+                        icon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+                        break;
+                    case 'completed':
+                        icon = '<i class="fas fa-check mr-2"></i>';
+                        break;
+                    case 'failed':
+                        icon = '<i class="fas fa-times mr-2"></i>';
+                        break;
+                }
+
+                let content = `
+                    ${icon}
+                    <div class="font-medium">${getStepName(step.step)}</div>
+                    <div class="text-xs opacity-90 mt-1">${step.details}</div>
+                `;
+
+                // Mostrar herramienta MCP específica si está disponible
+                if (step.mcp_tool) {
+                    content += `<div class="text-xs opacity-75 mt-1">🔧 Herramienta: ${step.mcp_tool}</div>`;
+                }
+
+                // Mostrar razonamiento si está disponible
+                if (step.reasoning) {
+                    content += `<div class="text-xs opacity-75 mt-1">💭 ${step.reasoning}</div>`;
+                }
+
+                if (step.duration > 0) {
+                    content += `<div class="text-xs opacity-75 mt-1">⏱️ ${step.duration.toFixed(2)}s</div>`;
+                }
+
+                stepDiv.innerHTML = content;
+                container.appendChild(stepDiv);
+            });
         }
 
         function getStepName(step) {
@@ -424,86 +477,117 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (response.ok) {
-                    // Agregar respuesta del asistente
-                    addMessage('assistant', data.response, data);
+                    // Mostrar pasos de procesamiento
+                    updateProcessingSteps(data.processing_steps || []);
+                    
+                    // Agregar respuesta
+                    addMessage('assistant', data.response, false, data);
                     
                     // Actualizar estadísticas
                     updateStats(data);
-                    
-                    // Mostrar pasos de procesamiento
-                    displayProcessingSteps(data.processing_steps || []);
                 } else {
-                    addMessage('assistant', `Error: ${data.detail || 'Error desconocido'}`, null, true);
+                    addMessage('error', `Error: ${data.detail || 'Error desconocido'}`);
                 }
+
             } catch (error) {
-                console.error('Error:', error);
-                addMessage('assistant', `Error de conexión: ${error.message}`, null, true);
+                addMessage('error', `Error de conexión: ${error.message}`);
             } finally {
                 isLoading = false;
                 updateSendButton(false);
             }
         }
 
-        function updateSendButton(loading) {
-            const button = document.getElementById('sendButton');
-            if (loading) {
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                button.disabled = true;
-                button.classList.add('opacity-50');
-            } else {
-                button.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                button.disabled = false;
-                button.classList.remove('opacity-50');
-            }
-        }
-
-        function addMessage(role, content, metadata = null, isError = false) {
+        function addMessage(type, content, isLoading = false, metadata = null) {
             const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `mb-6 fade-in ${role === 'user' ? 'text-right' : 'text-left'}`;
+            const messageId = 'msg-' + Date.now();
             
-            const iconClass = role === 'user' ? 'fas fa-user' : (isError ? 'fas fa-exclamation-triangle' : 'fas fa-robot');
-            const bgClass = role === 'user' ? 'message-user text-white' : (isError ? 'bg-red-100 text-red-800' : 'message-assistant text-white');
-            const textClass = role === 'user' ? 'text-white' : (isError ? 'text-red-800' : 'text-white');
+            let iconClass, bgClass, textClass;
+            
+            switch(type) {
+                case 'user':
+                    iconClass = 'fas fa-user';
+                    bgClass = 'bg-blue-50 border-l-4 border-blue-500';
+                    textClass = 'text-gray-800';
+                    break;
+                case 'assistant':
+                    iconClass = 'fas fa-robot';
+                    bgClass = 'bg-green-50 border-l-4 border-green-500';
+                    textClass = 'text-gray-800';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    bgClass = 'bg-red-50 border-l-4 border-red-500';
+                    textClass = 'text-red-800';
+                    break;
+            }
 
+            const messageDiv = document.createElement('div');
+            messageDiv.id = messageId;
+            messageDiv.className = `chat-message mb-4 p-4 rounded-lg ${bgClass}`;
+            
             let messageContent = `
-                <div class="flex items-start space-x-3 ${role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}">
+                <div class="flex items-start space-x-3">
                     <div class="flex-shrink-0">
                         <i class="${iconClass} text-lg"></i>
                     </div>
                     <div class="flex-1">
-                        <div class="${bgClass} p-4 rounded-lg max-w-4xl ${role === 'user' ? 'ml-auto' : 'mr-auto'}">
-                            <div class="${textClass} whitespace-pre-wrap">${formatMessage(content)}</div>
-                        </div>
+                        <div class="${textClass} whitespace-pre-wrap">${formatMessage(content)}</div>
             `;
 
             // Agregar metadata si existe
-            if (metadata && role === 'assistant' && !isError) {
+            if (metadata) {
                 messageContent += `
-                        <div class="mt-3 flex flex-wrap gap-2 text-xs">
-                            <span class="bg-gray-200 px-2 py-1 rounded">
-                                <i class="fas fa-clock mr-1"></i>${metadata.total_processing_time?.toFixed(2)}s
-                            </span>
-                            <span class="bg-gray-200 px-2 py-1 rounded">
-                                <i class="fas fa-hashtag mr-1"></i>${metadata.token_count} tokens
-                            </span>
-                            <span class="bg-gray-200 px-2 py-1 rounded">
-                                <i class="fas fa-dollar-sign mr-1"></i>$${metadata.cost_estimate?.toFixed(4) || '0.0000'}
-                            </span>
-                            <span class="bg-gray-200 px-2 py-1 rounded">
-                                <i class="fas fa-tools mr-1"></i>${metadata.tools_used?.join(', ') || 'N/A'}
-                            </span>
-                            <span class="bg-blue-200 px-2 py-1 rounded text-blue-800">
-                                <i class="fas fa-comments mr-1"></i>${metadata.conversation_stage || 'response'}
-                            </span>
-                        </div>
+                    <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-clock mr-1"></i>${metadata.total_processing_time?.toFixed(2)}s
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-hashtag mr-1"></i>${metadata.token_count} tokens
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-dollar-sign mr-1"></i>$${metadata.cost_estimate?.toFixed(4) || '0.0000'}
+                        </span>
+                        <span class="bg-gray-200 px-2 py-1 rounded">
+                            <i class="fas fa-tools mr-1"></i>${metadata.tools_used?.join(', ') || 'N/A'}
+                        </span>
+                        <span class="bg-blue-200 px-2 py-1 rounded text-blue-800">
+                            <i class="fas fa-comments mr-1"></i>${metadata.conversation_stage || 'response'}
+                        </span>
+                        ${metadata.system_prompt_used ? 
+                            '<span class="bg-purple-200 px-2 py-1 rounded text-purple-800"><i class="fas fa-shield-alt mr-1"></i>System Prompt</span>' : 
+                            '<span class="bg-orange-200 px-2 py-1 rounded text-orange-800"><i class="fas fa-cogs mr-1"></i>MCP</span>'
+                        }
+                    </div>
                 `;
 
                 // Agregar archivos S3 si existen
                 if (metadata.s3_files && metadata.s3_files.length > 0) {
                     messageContent += displayS3Files(metadata.s3_files);
+                }
+                
+                messageContent += `
+                            <h4 class="text-sm font-semibold text-blue-600 mb-2 flex items-center">
+                                <i class="fas fa-file-download mr-1"></i>Archivos generados:
+                            </h4>
+                            <div class="space-y-1">
+                `;
+                    
+                metadata.s3_files.forEach(file => {
+                    const fileName = file.split('/').pop().split('?')[0];
+                        messageContent += `
+                            <a href="${file}" target="_blank" 
+                               class="inline-block px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-download mr-1"></i>${fileName}
+                            </a>
+                        `;
+                    });
+                    
+                    messageContent += `
+                            </div>
+                        </div>
+                    `;
                 }
             }
 
@@ -515,18 +599,41 @@
             messageDiv.innerHTML = messageContent;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            return messageId;
+        }
+
+        function formatMessage(text) {
+            // Convertir URLs en links
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+            
+            // Formatear texto en negrita
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Formatear código inline
+            text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-200 px-1 rounded">$1</code>');
+            
+            return text;
+        }
+
+        function updateStats(data) {
+            messageCount++;
+            totalTokens += data.token_count || 0;
+            totalCost += data.cost_estimate || 0;
+            totalTime += data.total_processing_time || 0;
+
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('tokenCount').textContent = totalTokens;
+            document.getElementById('costEstimate').textContent = '$' + totalCost.toFixed(4);
+            document.getElementById('avgTime').textContent = messageCount > 0 ? (totalTime / messageCount).toFixed(1) + 's' : '0s';
+            document.getElementById('conversationStage').textContent = data.conversation_stage || 'response';
         }
 
         function displayS3Files(s3Files) {
             if (!s3Files || s3Files.length === 0) return '';
             
-            let filesHtml = `
-                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 class="text-sm font-semibold text-green-700 mb-2 flex items-center">
-                        <i class="fas fa-cloud-upload-alt mr-1"></i>Archivos subidos a S3:
-                    </h4>
-                    <div class="space-y-2">
-            `;
+            let filesHtml = '<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">';
+            filesHtml += '<h4 class="text-sm font-semibold text-green-800 mb-2"><i class="fas fa-cloud-upload-alt mr-1"></i>Archivos generados y subidos a S3:</h4>';
             
             s3Files.forEach(file => {
                 const icon = getFileIcon(file.type);
@@ -544,61 +651,36 @@
                 `;
             });
             
-            filesHtml += `
-                    </div>
-                </div>
-            `;
-            
+            filesHtml += '</div>';
             return filesHtml;
         }
 
-        function getFileIcon(type) {
+        function getFileIcon(fileType) {
             const icons = {
-                'diagram': 'fas fa-project-diagram',
+                'diagram': 'fas fa-image',
                 'document': 'fas fa-file-alt',
-                'code': 'fas fa-code',
-                'image': 'fas fa-image',
-                'json': 'fas fa-file-code'
+                'json': 'fas fa-code',
+                'text': 'fas fa-file-text',
+                'html': 'fas fa-code'
             };
-            return icons[type] || 'fas fa-file';
+            return icons[fileType] || 'fas fa-file';
         }
 
-        function formatMessage(message) {
-            return message.replace(/\n/g, '<br>');
-        }
-
-        function updateStats(data) {
-            messageCount++;
-            totalTokens += data.token_count || 0;
-            totalCost += data.cost_estimate || 0;
-            totalTime += data.total_processing_time || 0;
-
-            document.getElementById('messageCount').textContent = messageCount;
-            document.getElementById('tokenCount').textContent = totalTokens.toLocaleString();
-            document.getElementById('costEstimate').textContent = `$${totalCost.toFixed(4)}`;
-            document.getElementById('avgTime').textContent = `${(totalTime / messageCount).toFixed(2)}s`;
-            document.getElementById('conversationStage').textContent = data.conversation_stage || 'response';
-        }
-
-        function displayProcessingSteps(steps) {
-            const container = document.getElementById('processingSteps');
-            if (!steps || steps.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-500 text-sm">Sin pasos de procesamiento</div>';
-                return;
+        function updateSendButton(loading) {
+            const button = document.getElementById('sendButton');
+            if (loading) {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.disabled = true;
+                button.classList.add('opacity-50');
+            } else {
+                button.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                button.disabled = false;
+                button.classList.remove('opacity-50');
             }
-
-            container.innerHTML = steps.map(step => `
-                <div class="processing-step p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                    <div class="font-medium">${getStepName(step.step)}</div>
-                    <div class="text-xs opacity-90 mt-1">${step.details}</div>
-                    ${step.duration ? `<div class="text-xs text-gray-500 mt-1">${step.duration.toFixed(3)}s</div>` : ''}
-                </div>
-            `).join('');
         }
 
         function clearChat() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = `
+            document.getElementById('chatMessages').innerHTML = `
                 <div class="text-center text-gray-500 py-8">
                     <i class="fas fa-comments text-4xl mb-4"></i>
                     <p class="text-lg">¡Hola! Soy tu Arquitecto AWS estilo Amazon Q CLI.</p>
@@ -610,20 +692,14 @@
                 </div>
             `;
             
+            document.getElementById('processingSteps').innerHTML = '<div class="text-center text-gray-500 text-sm">Los pasos del procesamiento aparecerán aquí</div>';
+            
             // Reset stats
             messageCount = 0;
             totalTokens = 0;
             totalCost = 0;
             totalTime = 0;
-            
-            document.getElementById('messageCount').textContent = '0';
-            document.getElementById('tokenCount').textContent = '0';
-            document.getElementById('costEstimate').textContent = '$0.00';
-            document.getElementById('avgTime').textContent = '0s';
-            document.getElementById('conversationStage').textContent = '-';
-            
-            // Clear processing steps
-            document.getElementById('processingSteps').innerHTML = '<div class="text-center text-gray-500 text-sm">Esperando mensaje...</div>';
+            updateStats({token_count: 0, cost_estimate: 0, total_processing_time: 0, conversation_stage: '-'});
         }
 
         function clearInput() {
